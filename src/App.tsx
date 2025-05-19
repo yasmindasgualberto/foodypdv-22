@@ -51,6 +51,7 @@ function App() {
                 <Route path="/pdv" element={<PDV />} />
                 <Route path="/pdv-mobile" element={<PDVMobile />} />
                 <Route path="/produtos" element={<Products />} />
+                <Route path="/products" element={<Products />} /> {/* Adicionando rota em inglês */}
                 <Route path="/categorias" element={<Categories />} />
                 <Route path="/estoque" element={<Stock />} />
                 <Route path="/kds" element={<KDS />} />
