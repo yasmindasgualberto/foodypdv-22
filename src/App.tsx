@@ -57,6 +57,7 @@ function App() {
                 <Route path="/kds" element={<KDS />} />
                 <Route path="/pedidos" element={<Orders />} />
                 <Route path="/caixa" element={<Cashier />} />
+                <Route path="/cashier" element={<Cashier />} /> {/* Adicionando rota em inglês */}
                 <Route path="/configuracoes/*" element={<Settings />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
