@@ -10,7 +10,7 @@ type HeaderProps = {
 
 export function Header({ title, subtitle }: HeaderProps) {
   const { toast } = useToast();
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   
   const handleNotification = () => {
     toast({
@@ -41,7 +41,7 @@ export function Header({ title, subtitle }: HeaderProps) {
         
         <div className="flex items-center gap-2">
           <span className="text-sm hidden md:inline-block">
-            {user?.nome || 'Usuário'}
+            {profile?.nome || 'Usuário'}
           </span>
           <Button variant="outline" size="icon" onClick={() => signOut()}>
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
