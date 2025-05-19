@@ -7,7 +7,12 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { OrderProvider } from "./context/OrderContext";
 import { StockProvider } from "./context/StockContext";
 import { ProductProvider } from "./context/ProductContext";
+import { AuthProvider } from "./context/AuthContext";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+
 import Index from "./pages/Index";
+import Login from "./pages/Login";
+import SignUp from "./pages/SignUp";
 import Dashboard from "./pages/Dashboard";
 import PDV from "./pages/PDV";
 import PDVMobile from "./pages/PDVMobile";
@@ -19,6 +24,7 @@ import Categories from "./pages/Categories";
 import Orders from "./pages/Orders";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+
 import { useIsMobile } from "./hooks/use-mobile";
 
 const queryClient = new QueryClient();
@@ -32,30 +38,40 @@ const PDVRedirect = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <StockProvider>
-        <ProductProvider>
-          <OrderProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/pdv" element={<PDVRedirect />} />
-                <Route path="/pdv-mobile" element={<PDVMobile />} />
-                <Route path="/kds" element={<KDS />} />
-                <Route path="/stock" element={<Stock />} />
-                <Route path="/cashier" element={<Cashier />} />
-                <Route path="/products" element={<Products />} />
-                <Route path="/categories" element={<Categories />} />
-                <Route path="/orders" element={<Orders />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </OrderProvider>
-        </ProductProvider>
-      </StockProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <StockProvider>
+            <ProductProvider>
+              <OrderProvider>
+                <Toaster />
+                <Sonner />
+                <Routes>
+                  {/* Rotas públicas */}
+                  <Route path="/" element={<Index />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<SignUp />} />
+                  
+                  {/* Rotas protegidas */}
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/pdv" element={<PDVRedirect />} />
+                    <Route path="/pdv-mobile" element={<PDVMobile />} />
+                    <Route path="/kds" element={<KDS />} />
+                    <Route path="/stock" element={<Stock />} />
+                    <Route path="/cashier" element={<Cashier />} />
+                    <Route path="/products" element={<Products />} />
+                    <Route path="/categories" element={<Categories />} />
+                    <Route path="/orders" element={<Orders />} />
+                    <Route path="/settings" element={<Settings />} />
+                  </Route>
+                  
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </OrderProvider>
+            </ProductProvider>
+          </StockProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );
