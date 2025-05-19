@@ -1,13 +1,14 @@
 
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Session, User } from "@supabase/supabase-js";
-import { Profile } from "@/types/supabase";
-import { toast } from "sonner";
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
+import { Profile } from '@/types/supabase';
+import { toast } from 'sonner';
 
 interface AuthContextType {
-  user: User | null;
   session: Session | null;
+  user: any | null;
   profile: Profile | null;
   loading: boolean;
   signOut: () => Promise<void>;
@@ -15,137 +16,143 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // Função para buscar o perfil do usuário
-  const fetchProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      if (error) {
-        console.error("Erro ao buscar perfil:", error);
-        return null;
-      }
-
-      return data as Profile;
-    } catch (error) {
-      console.error("Erro ao processar perfil:", error);
-      return null;
-    }
-  };
+  const navigate = useNavigate();
 
   // Função para limpar o estado de autenticação
   const cleanupAuthState = () => {
+    // Remover tokens de autenticação padrão
     localStorage.removeItem('supabase.auth.token');
     
+    // Remover todas as chaves de autenticação Supabase do localStorage
     Object.keys(localStorage).forEach((key) => {
       if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
         localStorage.removeItem(key);
       }
     });
     
+    // Remover do sessionStorage se estiver em uso
     Object.keys(sessionStorage || {}).forEach((key) => {
       if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
         sessionStorage.removeItem(key);
       }
     });
+
+    // Remover dados de produto, estoque e pedidos do localStorage
+    localStorage.removeItem('products');
+    localStorage.removeItem('stockItems');
+    localStorage.removeItem('orders');
+    localStorage.removeItem('shifts');
+    localStorage.removeItem('generalSettings');
+    localStorage.removeItem('appearanceSettings');
+    localStorage.removeItem('printerSettings');
+    localStorage.removeItem('integrationSettings');
+  };
+
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Erro ao buscar perfil:', error);
+        return null;
+      }
+      return data;
+    } catch (error) {
+      console.error('Erro na requisição de perfil:', error);
+      return null;
+    }
   };
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      setLoading(true);
-      
-      try {
-        // Configurar o listener para mudanças de estado de autenticação
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          (event, currentSession) => {
-            console.log("Auth state changed:", event);
-            setUser(currentSession?.user ?? null);
-            setSession(currentSession);
-            
-            // Buscar o perfil do usuário quando autenticado
-            if (currentSession?.user) {
-              setTimeout(async () => {
-                const userProfile = await fetchProfile(currentSession.user.id);
-                setProfile(userProfile);
-              }, 0);
-            } else {
-              setProfile(null);
-            }
-          }
-        );
-        
-        // Verificar se já existe uma sessão
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        setUser(currentSession?.user ?? null);
+    // Configurar o ouvinte de alterações de estado de autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, currentSession) => {
+        console.log('Auth state changed:', event, currentSession);
         setSession(currentSession);
-        
-        // Buscar o perfil se existir um usuário
+        setUser(currentSession?.user ?? null);
+
         if (currentSession?.user) {
-          const userProfile = await fetchProfile(currentSession.user.id);
-          setProfile(userProfile);
+          // Usar setTimeout para evitar deadlocks
+          setTimeout(async () => {
+            const profileData = await fetchProfile(currentSession.user.id);
+            setProfile(profileData);
+          }, 0);
+        } else {
+          setProfile(null);
         }
-        
-        return () => {
-          subscription.unsubscribe();
-        };
+
+        setLoading(false);
+      }
+    );
+
+    // Verificar sessão existente
+    const initializeAuth = async () => {
+      try {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+
+        if (currentSession?.user) {
+          const profileData = await fetchProfile(currentSession.user.id);
+          setProfile(profileData);
+        }
       } catch (error) {
-        console.error("Erro na inicialização da autenticação:", error);
+        console.error('Erro ao inicializar autenticação:', error);
       } finally {
         setLoading(false);
       }
     };
-    
+
     initializeAuth();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
     try {
-      setLoading(true);
-      
-      // Limpar estado de autenticação
+      // Limpar estado de autenticação primeiro
       cleanupAuthState();
       
-      // Deslogar do Supabase
+      // Tentar deslogar globalmente
       await supabase.auth.signOut({ scope: 'global' });
       
-      setUser(null);
+      // Atualizar estado
       setSession(null);
+      setUser(null);
       setProfile(null);
       
-      toast.success("Desconectado com sucesso");
+      toast.success("Logout realizado com sucesso");
       
-      // Redirecionar para a página de login com refresh
-      window.location.href = "/login";
-    } catch (error) {
-      console.error("Erro ao deslogar:", error);
-      toast.error("Erro ao desconectar. Tente novamente.");
-    } finally {
-      setLoading(false);
+      // Redirecionar para login
+      navigate('/login');
+    } catch (error: any) {
+      console.error('Erro ao fazer logout:', error);
+      toast.error(`Erro ao fazer logout: ${error.message}`);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, signOut }}>
+    <AuthContext.Provider value={{ session, user, profile, loading, signOut }}>
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
-export function useAuth() {
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  
   if (context === undefined) {
-    throw new Error("useAuth deve ser usado dentro de um AuthProvider");
+    throw new Error('useAuth deve ser usado dentro de um AuthProvider');
   }
-  
   return context;
-}
+};
