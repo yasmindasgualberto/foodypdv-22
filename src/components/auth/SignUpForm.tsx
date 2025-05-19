@@ -1,135 +1,187 @@
 
-import * as React from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { useAuth } from "@/context/AuthContext";
-import { Link } from "react-router-dom";
-
-const formSchema = z.object({
-  nome: z.string().min(2, {
-    message: "O nome deve ter pelo menos 2 caracteres.",
-  }),
-  email: z.string().email({
-    message: "Insira um email válido.",
-  }),
-  password: z.string().min(6, {
-    message: "A senha deve ter pelo menos 6 caracteres.",
-  }),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "As senhas não coincidem",
-  path: ["confirmPassword"],
-});
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export function SignUpForm() {
-  const { signUp, loading } = useAuth();
-  
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      nome: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    },
-  });
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    await signUp(values.email, values.password, values.nome);
-  }
+  // Função para limpar o estado de autenticação
+  const cleanupAuthState = () => {
+    localStorage.removeItem('supabase.auth.token');
+    
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        localStorage.removeItem(key);
+      }
+    });
+    
+    Object.keys(sessionStorage || {}).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        sessionStorage.removeItem(key);
+      }
+    });
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!nome || !email || !password || !confirmPassword) {
+      toast.error("Preencha todos os campos");
+      return;
+    }
+    
+    if (password !== confirmPassword) {
+      toast.error("As senhas não coincidem");
+      return;
+    }
+    
+    if (password.length < 6) {
+      toast.error("A senha deve ter pelo menos 6 caracteres");
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      
+      // Limpar estado de autenticação existente
+      cleanupAuthState();
+      
+      // Tentar deslogar globalmente primeiro
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        // Continuar mesmo se falhar
+      }
+      
+      // Registrar usuário com email/senha
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            nome: nome,
+          },
+        },
+      });
+      
+      if (error) throw error;
+      
+      if (data.user) {
+        if (data.session) {
+          // Se o usuário já tem uma sessão (email verification desabilitado)
+          toast.success("Cadastro realizado com sucesso!");
+          navigate("/");
+        } else {
+          // Se email verification está habilitado
+          toast.success("Cadastro realizado! Verifique seu email para confirmar a conta.");
+          navigate("/login");
+        }
+      }
+    } catch (error: any) {
+      let message = "Erro ao criar conta";
+      
+      if (error.message) {
+        if (error.message.includes("User already registered")) {
+          message = "Este email já está cadastrado";
+        } else {
+          message = error.message;
+        }
+      }
+      
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="w-full max-w-md mx-auto space-y-6">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold">Criar Conta</h1>
-        <p className="text-muted-foreground mt-2">
-          Preencha os dados para criar sua conta no FoodPOS
-        </p>
-      </div>
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="text-2xl">Cadastro</CardTitle>
+        <CardDescription>
+          Crie sua conta para acessar o sistema
+        </CardDescription>
+      </CardHeader>
       
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="nome"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nome</FormLabel>
-                <FormControl>
-                  <Input placeholder="Seu nome" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+      <form onSubmit={handleSignUp}>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="nome">Nome</Label>
+            <Input
+              id="nome"
+              type="text"
+              placeholder="Seu nome completo"
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              required
+            />
+          </div>
           
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input placeholder="seu@email.com" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="seu@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
           
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Senha</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder="******" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="space-y-2">
+            <Label htmlFor="password">Senha</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Mínimo 6 caracteres"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
           
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirmar Senha</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder="******" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Criando conta..." : "Cadastrar"}
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirme a senha</Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              placeholder="Digite sua senha novamente"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          </div>
+        </CardContent>
+        
+        <CardFooter className="flex flex-col space-y-4">
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={loading}
+          >
+            {loading ? "Cadastrando..." : "Cadastrar"}
           </Button>
-        </form>
-      </Form>
-      
-      <div className="text-center">
-        <p className="text-sm text-muted-foreground">
-          Já tem uma conta?{" "}
-          <Link to="/login" className="text-primary hover:underline">
-            Entrar
-          </Link>
-        </p>
-      </div>
-    </div>
+          
+          <div className="text-center text-sm">
+            Já tem uma conta?{" "}
+            <Link to="/login" className="text-primary hover:underline">
+              Fazer login
+            </Link>
+          </div>
+        </CardFooter>
+      </form>
+    </Card>
   );
 }
