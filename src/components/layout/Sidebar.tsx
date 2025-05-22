@@ -12,8 +12,7 @@ import {
   Package,
   Tag,
   Menu,
-  Settings,
-  Smartphone
+  Settings
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -27,7 +26,6 @@ type NavItem = {
 const navItems: NavItem[] = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", showOn: "both" },
   { icon: ShoppingCart, label: "PDV", path: "/pdv", showOn: "both" },
-  { icon: Smartphone, label: "PDV Mobile", path: "/pdv-mobile", showOn: "both" },
   { icon: ClipboardList, label: "KDS", path: "/kds", showOn: "both" },
   { icon: Menu, label: "Pedidos", path: "/orders", showOn: "both" },
   { icon: Package, label: "Estoque", path: "/stock", showOn: "both" },

@@ -53,18 +53,18 @@ function App() {
                 <Route path="/produtos" element={<Products />} />
                 <Route path="/products" element={<Products />} /> {/* Rota em inglês */}
                 <Route path="/categorias" element={<Categories />} />
-                <Route path="/categories" element={<Categories />} /> {/* Adicionando rota em inglês */}
+                <Route path="/categories" element={<Categories />} /> {/* Rota em inglês */}
                 <Route path="/estoque" element={<Stock />} />
-                <Route path="/stock" element={<Stock />} /> {/* Adicionando rota em inglês */}
+                <Route path="/stock" element={<Stock />} /> {/* Rota em inglês */}
                 <Route path="/kds" element={<KDS />} />
                 <Route path="/pedidos" element={<Orders />} />
-                <Route path="/orders" element={<Orders />} /> {/* Adicionando rota em inglês */}
+                <Route path="/orders" element={<Orders />} /> {/* Rota em inglês */}
                 <Route path="/caixa" element={<Cashier />} />
                 <Route path="/cashier" element={<Cashier />} /> {/* Rota em inglês */}
-                <Route path="/configuracoes" element={<Settings />} /> {/* Corrigindo rota em português */}
+                <Route path="/configuracoes" element={<Settings />} /> {/* Rota em português */}
                 <Route path="/configuracoes/*" element={<Settings />} />
-                <Route path="/settings" element={<Settings />} /> {/* Adicionando rota em inglês */}
-                <Route path="/settings/*" element={<Settings />} /> {/* Adicionando rota em inglês com sub-rotas */}
+                <Route path="/settings" element={<Settings />} /> {/* Rota em inglês */}
+                <Route path="/settings/*" element={<Settings />} /> {/* Rota em inglês com sub-rotas */}
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
