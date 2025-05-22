@@ -11,9 +11,9 @@ import { toast } from "sonner";
 
 const KDS = () => {
   const { orders, updateOrderStatus } = useOrders();
-  const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
+  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   
-  const handleStatusChange = (orderId: number, newStatus: Order["status"]) => {
+  const handleStatusChange = (orderId: string, newStatus: Order["status"]) => {
     updateOrderStatus(orderId, newStatus);
     toast.success(`Pedido #${orderId} atualizado para ${translateStatus(newStatus)}`);
   };
@@ -57,7 +57,7 @@ const KDS = () => {
   const inProgressOrders = orders.filter(order => order.status === "in-progress");
   const readyOrders = orders.filter(order => order.status === "ready");
   
-  const handleOrderSelection = (orderId: number) => {
+  const handleOrderSelection = (orderId: string) => {
     setSelectedOrders(prev => {
       if (prev.includes(orderId)) {
         return prev.filter(id => id !== orderId);

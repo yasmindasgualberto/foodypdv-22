@@ -30,7 +30,7 @@ interface EditStockItemDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   item: StockItem | null;
-  onSubmit: (id: number, data: Partial<StockItem>) => void;
+  onSubmit: (id: string, data: Partial<StockItem>) => void;  // Alterado de number para string
 }
 
 export const EditStockItemDialog: React.FC<EditStockItemDialogProps> = ({

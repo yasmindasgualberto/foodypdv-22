@@ -16,7 +16,7 @@ interface DeleteConfirmDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   item: StockItem | null;
-  onConfirm: (id: number) => void;
+  onConfirm: (id: string) => void;  // Alterado de number para string
 }
 
 export const DeleteConfirmDialog: React.FC<DeleteConfirmDialogProps> = ({

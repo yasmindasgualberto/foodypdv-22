@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
@@ -67,13 +68,13 @@ const Stock = () => {
     toast.success("Item adicionado ao estoque com sucesso!");
   };
 
-  const handleEditItem = (id: number, updatedItem: Partial<StockItem>) => {
+  const handleEditItem = (id: string, updatedItem: Partial<StockItem>) => {
     updateStockItem(id, updatedItem);
     setIsEditDialogOpen(false);
     toast.success("Item atualizado com sucesso!");
   };
 
-  const handleUpdateQuantity = (id: number, quantity: number, isIncrement: boolean) => {
+  const handleUpdateQuantity = (id: string, quantity: number, isIncrement: boolean) => {
     updateQuantity(id, quantity, isIncrement);
     setIsQuantityDialogOpen(false);
     
@@ -84,7 +85,7 @@ const Stock = () => {
     }
   };
 
-  const handleDeleteItem = (id: number) => {
+  const handleDeleteItem = (id: string) => {
     deleteStockItem(id);
     setIsDeleteDialogOpen(false);
     toast.success("Item removido do estoque!");
@@ -180,7 +181,7 @@ const Stock = () => {
                 ) : (
                   filteredItems.map((item) => (
                     <TableRow key={item.id}>
-                      <TableCell className="font-medium">{item.id}</TableCell>
+                      <TableCell className="font-medium">{item.id.substring(0, 8)}...</TableCell>
                       <TableCell>{item.name}</TableCell>
                       <TableCell>
                         <Badge variant="outline">{item.category}</Badge>

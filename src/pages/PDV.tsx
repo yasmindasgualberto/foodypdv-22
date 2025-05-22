@@ -18,9 +18,9 @@ import { useProducts, Product } from "@/context/ProductContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Image } from "lucide-react";
 
-// Tipo do item no carrinho
+// Modificando o tipo CartItem para usar string como id
 type CartItem = {
-  id: number;
+  id: string;  // Mudado de number para string
   name: string;
   price: number;
   quantity: number;
@@ -96,6 +96,7 @@ const PDV = () => {
     if (!currentProduct) return;
     
     setCart((prevCart) => {
+      // Verificar se já existe um item com o mesmo ID e mesma observação
       const existingItemIndex = prevCart.findIndex(
         (item) => 
           item.id === currentProduct.id && 
@@ -115,9 +116,12 @@ const PDV = () => {
       return [
         ...prevCart, 
         { 
-          ...currentProduct, 
-          quantity: 1, 
-          observation 
+          id: currentProduct.id,
+          name: currentProduct.name,
+          price: currentProduct.price,
+          quantity: 1,
+          observation,
+          imageUrl: currentProduct.imageUrl
         }
       ];
     });

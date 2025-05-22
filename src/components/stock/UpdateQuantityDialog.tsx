@@ -11,7 +11,7 @@ interface UpdateQuantityDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   item: StockItem | null;
-  onUpdate: (id: number, quantity: number, isIncrement: boolean) => void;
+  onUpdate: (id: string, quantity: number, isIncrement: boolean) => void;  // Alterado de number para string
 }
 
 export const UpdateQuantityDialog: React.FC<UpdateQuantityDialogProps> = ({

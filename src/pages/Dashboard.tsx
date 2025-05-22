@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
@@ -42,7 +41,7 @@ const Dashboard = () => {
     const productCounts: Record<string, number> = {};
     
     todayOrders.forEach(order => {
-      order.items.forEach(item => {
+      order.items.forEach((item: { name: string; quantity: number }) => {
         if (productCounts[item.name]) {
           productCounts[item.name] += item.quantity;
         } else {
@@ -58,7 +57,12 @@ const Dashboard = () => {
     
     // Pegando pedidos recentes
     const recentOrders = [...todayOrders]
-      .sort((a, b) => b.id - a.id)
+      .sort((a, b) => {
+        // Adaptação para ids que agora são strings
+        const idA = typeof a.id === 'number' ? a.id : 0;
+        const idB = typeof b.id === 'number' ? b.id : 0;
+        return idB - idA;
+      })
       .slice(0, 5)
       .map(order => ({
         id: order.id,
