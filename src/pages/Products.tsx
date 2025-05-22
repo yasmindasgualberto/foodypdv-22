@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
@@ -313,7 +314,7 @@ const Products = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID</TableHead>
+                  {/* Removido o cabeçalho para a coluna ID */}
                   <TableHead>Produto</TableHead>
                   <TableHead>Categoria</TableHead>
                   <TableHead className="text-right">Preço</TableHead>
@@ -325,7 +326,7 @@ const Products = () => {
               <TableBody>
                 {filteredProducts.map((product) => (
                   <TableRow key={product.id}>
-                    <TableCell className="font-medium">{product.id}</TableCell>
+                    {/* Removida a célula que mostra o ID */}
                     <TableCell>
                       <div className="flex items-center">
                         <div className="w-8 h-8 rounded bg-muted mr-2 flex items-center justify-center text-muted-foreground overflow-hidden">
