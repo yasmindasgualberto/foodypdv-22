@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
@@ -64,12 +65,25 @@ const Dashboard = () => {
         return idB - idA;
       })
       .slice(0, 5)
-      .map(order => ({
-        id: order.id,
-        identifier: order.identifier,
-        type: order.type,
-        total: calculateOrderTotal(order)
-      }));
+      .map(order => {
+        // Gerar um ID simplificado para exibição
+        let simpleId;
+        if (typeof order.id === 'string') {
+          // Se for uma string longa como UUID, pegar apenas os primeiros 6 caracteres
+          simpleId = order.id.substring(0, 6);
+        } else {
+          // Se for um número, usar como está
+          simpleId = order.id;
+        }
+        
+        return {
+          id: order.id,
+          simpleId: simpleId,
+          identifier: order.identifier,
+          type: order.type,
+          total: calculateOrderTotal(order)
+        };
+      });
     
     // Tendência simulada com base no número de pedidos
     // Em uma aplicação real, isso compararia com dias anteriores
@@ -196,7 +210,7 @@ const Dashboard = () => {
                           order.type === "Mesa" ? "bg-pdv-accent" : 
                           order.type === "Delivery" ? "bg-pdv-secondary" : "bg-pdv-primary"
                         }`}></div>
-                        <span>Pedido #{order.id}</span>
+                        <span>Pedido #{order.simpleId}</span>
                       </div>
                       <div className="flex items-center gap-4">
                         <span className="text-sm text-muted-foreground">
